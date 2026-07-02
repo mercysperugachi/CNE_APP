@@ -3,12 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/service_locator.dart' as di;
 import '../../../../core/config/constants.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/shared_widgets.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../bloc/provincial_bloc.dart';
 import '../bloc/provincial_event.dart';
 import '../bloc/provincial_state.dart';
 import '../widgets/dashboard_chart.dart';
-
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/config/appwrite_config.dart';
 
@@ -37,15 +37,11 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
   void _setupRealtime() {
     final client = di.sl<AppwriteConfig>().client;
     final realtime = Realtime(client);
-    
     _subscription = realtime.subscribe([
       'databases.${AppConstants.databaseId}.collections.${AppConstants.actasCollectionId}.documents'
     ]);
-    
     _subscription?.stream.listen((response) {
-      if (mounted) {
-        _loadData(context);
-      }
+      if (mounted) _loadData(context);
     });
   }
 
@@ -53,12 +49,10 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
     final dignidad = _tabController.index == 0
         ? AppConstants.dignidadAlcalde
         : AppConstants.dignidadPrefecto;
-    _bloc?.add(
-      LoadVotosConsolidadosEvent(
-        dignidad: dignidad,
-        recintoId: _selectedRecintoId,
-      ),
-    );
+    _bloc?.add(LoadVotosConsolidadosEvent(
+      dignidad: dignidad,
+      recintoId: _selectedRecintoId,
+    ));
   }
 
   @override
@@ -74,88 +68,78 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
       create: (_) {
         final bloc = di.sl<ProvincialBloc>();
         _bloc = bloc;
-        final dignidad = _tabController.index == 0
-            ? AppConstants.dignidadAlcalde
-            : AppConstants.dignidadPrefecto;
         bloc.add(LoadVotosConsolidadosEvent(
-          dignidad: dignidad,
+          dignidad: AppConstants.dignidadAlcalde,
           recintoId: _selectedRecintoId,
         ));
         return bloc;
       },
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Dashboard de Votos', style: TextStyle(fontWeight: FontWeight.w700)),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () => _loadData(context),
-                  tooltip: 'Actualizar',
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: CircleAvatar(
-                    backgroundColor: AppTheme.surfaceContainerHigh,
-                    child: Icon(Icons.person, color: AppTheme.secondary),
+      child: Scaffold(
+          body: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(gradient: AppTheme.headerGradient),
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                        child: Row(
+                          children: [
+                            if (Navigator.of(context).canPop())
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            const Expanded(
+                              child: Text(
+                                'Dashboard de Votos',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                              onPressed: () => _loadData(context),
+                              tooltip: 'Actualizar',
+                            ),
+                          ],
+                        ),
+                      ),
+                      TabBar(
+                        controller: _tabController,
+                        onTap: (_) => _loadData(context),
+                        indicatorColor: Colors.white,
+                        indicatorWeight: 4,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.white60,
+                        tabs: const [
+                          Tab(icon: Icon(Icons.location_city_rounded, size: 18), text: 'ALCALDES'),
+                          Tab(icon: Icon(Icons.account_balance_rounded, size: 18), text: 'PREFECTOS'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-              bottom: TabBar(
-                controller: _tabController,
-                onTap: (_) => _loadData(context),
-                indicatorColor: AppTheme.primaryContainer,
-                indicatorWeight: 4,
-                labelColor: AppTheme.onSurface,
-                unselectedLabelColor: AppTheme.onSurfaceVariant,
-                tabs: const [
-                  Tab(icon: Icon(Icons.location_city, size: 18), text: 'ALCALDES'),
-                  Tab(icon: Icon(Icons.account_balance, size: 18), text: 'PREFECTOS'),
-                ],
               ),
-            ),
-            body: BlocBuilder<ProvincialBloc, ProvincialState>(
-              builder: (context, state) {
-                if (state is ProvincialLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state is ProvincialError) {
-                  return _buildError(context, state.message);
-                }
-                if (state is ProvincialVotosConsolidadosLoaded) {
-                  return _buildContent(context, state);
-                }
-                return const Center(child: Text('Seleccione una opción', style: TextStyle(color: AppTheme.onSurfaceVariant)));
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildError(BuildContext context, String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, color: AppTheme.error.withOpacity(0.7), size: 56),
-            const SizedBox(height: 16),
-            Text('Error al cargar datos', style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: AppTheme.onSurfaceVariant)),
-            const SizedBox(height: 20),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Reintentar'),
-              onPressed: () => _loadData(context),
-            ),
-          ],
+              Expanded(
+                child: BlocBuilder<ProvincialBloc, ProvincialState>(
+                  builder: (context, state) {
+                    if (state is ProvincialLoading) return const LoadingShimmer();
+                    if (state is ProvincialError) {
+                      return ErrorState(message: state.message, onRetry: () => _loadData(context));
+                    }
+                    if (state is ProvincialVotosConsolidadosLoaded) {
+                      return _buildContent(context, state);
+                    }
+                    return const Center(child: Text('Seleccione una opción', style: TextStyle(color: AppTheme.onSurfaceVariant)));
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
     );
   }
 
@@ -164,7 +148,6 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
     final totalMesas = state.votos.fold<int>(0, (acc, v) => acc + v.cantidadMesas);
 
     return RefreshIndicator(
-      color: AppTheme.primaryContainer,
       onRefresh: () async {
         _loadData(context);
         await Future<void>.delayed(const Duration(milliseconds: 400));
@@ -173,71 +156,51 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          // Header
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Panel de Control Provincial', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 4),
-              Text('Vista consolidada de escrutinio y avance de recintos.', style: Theme.of(context).textTheme.bodyLarge),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Bento Grid: Main KPI Card
-          Container(
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Panel de Control Provincial', style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 4),
+            Text('Vista consolidada de escrutinio y avance de recintos.', style: Theme.of(context).textTheme.bodyLarge),
+          ]),
+          const SizedBox(height: 20),
+          // KPI Card
+          ModernCard(
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppTheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.outlineVariantSolid),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 4,
-                  width: double.infinity,
-                  color: AppTheme.primaryContainer,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  height: 4, width: 60,
+                  decoration: BoxDecoration(color: AppTheme.primaryContainer, borderRadius: BorderRadius.circular(2)),
                 ),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Votos Consolidados - ${state.dignidad}', style: Theme.of(context).textTheme.headlineSmall),
-                          const SizedBox(height: 4),
-                          Text('Escrutinio actual', style: Theme.of(context).textTheme.bodyMedium),
-                        ],
-                      ),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('Votos Consolidados - ${state.dignidad}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+                        const SizedBox(height: 4),
+                        const Text('Escrutinio actual', style: TextStyle(fontSize: 14, color: AppTheme.textMuted)),
+                      ]),
                     ),
-                    const Icon(Icons.how_to_vote, color: AppTheme.primaryContainer, size: 36),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: AppTheme.primaryContainer.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                      child: const Icon(Icons.how_to_vote_rounded, color: AppTheme.primaryContainer, size: 32),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text('$total', style: Theme.of(context).textTheme.displayLarge),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondaryContainer,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text('$totalMesas Mesas', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppTheme.onSecondaryContainer)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(color: AppTheme.secondary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+                      child: Text('$totalMesas Mesas', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.secondary)),
                     ),
                   ],
                 ),
@@ -245,8 +208,8 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
                 ClipRRect(
                   borderRadius: BorderRadius.circular(999),
                   child: LinearProgressIndicator(
-                    value: total > 0 ? 0.68 : 0.0, // Mock progress, as we don't have total expected
-                    backgroundColor: AppTheme.surfaceContainerHigh,
+                    value: total > 0 ? 0.68 : 0.0,
+                    backgroundColor: AppTheme.surfaceGray,
                     valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryContainer),
                     minHeight: 12,
                   ),
@@ -254,57 +217,29 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Chart Section (Original functionality wrapped in design)
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Resultados', style: Theme.of(context).textTheme.headlineSmall),
+              const SectionHeader(title: 'Resultados'),
               TextButton(
                 onPressed: () {},
-                child: const Row(
-                  children: [
-                    Text('Ver detalles'),
-                    Icon(Icons.arrow_forward, size: 16),
-                  ],
-                ),
+                child: const Row(children: [Text('Ver detalles'), Icon(Icons.arrow_forward_rounded, size: 16)]),
               ),
             ],
           ),
-          const SizedBox(height: 12),
           if (state.votos.isEmpty)
-            Container(
+            ModernCard(
               padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: AppTheme.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.surfaceContainerHigh),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.inbox, size: 56, color: AppTheme.onSurfaceVariant.withOpacity(0.5)),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Aún no hay actas registradas para esta dignidad.',
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+              child: Column(children: [
+                Icon(Icons.inbox_rounded, size: 56, color: AppTheme.textMuted.withValues(alpha: 0.5)),
+                const SizedBox(height: 12),
+                const Text('Aún no hay actas registradas para esta dignidad.', textAlign: TextAlign.center),
+              ]),
             )
           else
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.outlineVariantSolid),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: DashboardChart(votos: state.votos, total: total),
-            ),
-          
-          const SizedBox(height: 32),
-          // Quick Actions Grid
+            DashboardChart(votos: state.votos, total: total),
+          const SizedBox(height: 24),
           GridView.count(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
@@ -327,19 +262,23 @@ class _VotosConsolidadosPageState extends State<VotosConsolidadosPage>
   Widget _buildActionCard(String title, IconData icon, BuildContext context) {
     return InkWell(
       onTap: () {},
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.outlineVariantSolid),
+          color: AppTheme.cardBg,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: AppTheme.cardShadow,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: AppTheme.secondary),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: AppTheme.secondary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, size: 24, color: AppTheme.secondary),
+            ),
             const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
+            Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
           ],
         ),
       ),

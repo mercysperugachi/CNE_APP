@@ -1,9 +1,9 @@
 class AppConstants {
   // Appwrite Project & DB
   static const String backendUrl = 'https://backend-to-email.onrender.com'; // Backend de correos desplegado
-  static const String projectId = '6a3d88c70024b0b40bab';
-  static const String databaseId = '6a3d8e8a003536d98c4a';
-  static const String apiKey = 'standard_ec07e3f1b072d14ed82a441240c90516cc71b5a442081247f12e226fce1bcc80dd3e59bd2d3ddf47df77b503dbdced452081be3833c1c7d10eaa8cbb81616a54d44d0e475df69e3ee6414bbbdffc3ea05b5c45d42a773007c925bc2c40c08fe8fb044d228c3be832b9dccf0e7245f827d92bfbbd9c1f81c5a758b4bce81bfd30';
+  static const String projectId = '6a3dfba4001565b60d12';
+  static const String databaseId = '6a46a0d0001346d3be26';
+  static const String apiKey = 'standard_697582eb0cbbbc307bfa89253f43d282ed203c2e1589e1b0ff563418395487aeb056b567506234d5205d441ca21edf4f13b9c198ef46936fb205ec728c95a0baed4dc16d4ff8cf8ace97794518b4e3d9c34a1d97300e4bfeb6604aa4b5474ae847010926ba32560d81ce388fb630bdeb3b3788f6343d722c326c018b89f630bd';
 
   // Colecciones
   static const String usersCollectionId = 'users';
@@ -12,7 +12,7 @@ class AppConstants {
   static const String asignacionesCollectionId = 'asignaciones';
   static const String actasCollectionId = 'actas';
   static const String organizacionesCollectionId = 'organizaciones';
-  static const String storageBucketId = '6a418301003dc80f8021';
+  static const String storageBucketId = '6a46a50b003a63c43539';
 
   // Roles
   static const String rolProvincial = 'provincial';

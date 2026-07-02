@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/shared_widgets.dart';
 import '../../../../core/utils/val_cedula.dart';
 import '../bloc/recinto_bloc.dart';
 import '../bloc/recinto_event.dart';
@@ -44,101 +45,107 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Veedor · Mesa ${widget.numeroMesa}')),
-      body: BlocListener<RecintoBloc, RecintoState>(
-        listener: (context, state) {
-          if (state is RecintoError) {
-            setState(() => _submitting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppTheme.danger),
-            );
-          } else if (state is RecintoActionSuccess) {
-            setState(() => _submitting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: AppTheme.success),
-            );
-            Navigator.of(context).pop();
-          }
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.primary.withOpacity(0.15)),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          ModernAppBar(title: 'Veedor', subtitle: 'Mesa ${widget.numeroMesa}'),
+          Expanded(
+            child: BlocListener<RecintoBloc, RecintoState>(
+              listener: (context, state) {
+                if (state is RecintoError) {
+                  setState(() => _submitting = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message), backgroundColor: AppTheme.danger, behavior: SnackBarBehavior.floating),
+                  );
+                } else if (state is RecintoActionSuccess) {
+                  setState(() => _submitting = false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message), backgroundColor: AppTheme.success, behavior: SnackBarBehavior.floating),
+                  );
+                  Navigator.of(context).pop();
+                }
+              },
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, size: 18, color: AppTheme.primary),
-                          SizedBox(width: 8),
-                          Text('Información', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.primary)),
-                        ],
+                      ModernCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.secondary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.info_outline, size: 16, color: AppTheme.secondary),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text('Información', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.secondary)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Clave por defecto: "Ecuador2026". Un veedor puede ser asignado a varias mesas. Se enviará correo de confirmación.',
+                              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Clave por defecto: "Ecuador2026". Un veedor puede ser asignado a varias mesas. Se enviará correo de confirmación.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _cedulaController,
+                        decoration: AppTheme.modernInput(label: 'Cédula (10 dígitos)', prefixIcon: Icons.badge_outlined),
+                        keyboardType: TextInputType.number,
+                        maxLength: 10,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Requerido';
+                          if (!CedulaValidator.isValid(v)) return CedulaValidator.formatMessage();
+                          return null;
+                        },
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _cedulaController,
-                  decoration: AppTheme.inputDecoration(label: 'Cédula (10 dígitos)', prefixIcon: Icons.badge_outlined),
-                  keyboardType: TextInputType.number,
-                  maxLength: 10,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Requerido';
-                    if (!CedulaValidator.isValid(v)) return CedulaValidator.formatMessage();
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nombresController,
-                  decoration: AppTheme.inputDecoration(label: 'Nombres', prefixIcon: Icons.person_outline),
-                  validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _apellidosController,
-                  decoration: AppTheme.inputDecoration(label: 'Apellidos', prefixIcon: Icons.person_outline),
-                  validator: (v) => v!.isEmpty ? 'Requerido' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _telefonoController,
-                  decoration: AppTheme.inputDecoration(label: 'Teléfono', prefixIcon: Icons.phone_outlined),
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _correoController,
-                  decoration: AppTheme.inputDecoration(label: 'Correo Electrónico', prefixIcon: Icons.email_outlined),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Requerido';
-                    final emailRegex = RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$');
-                    if (!emailRegex.hasMatch(v)) return 'Correo inválido';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: _submitting
-                      ? null
-                      : () {
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _nombresController,
+                        decoration: AppTheme.modernInput(label: 'Nombres', prefixIcon: Icons.person_outline),
+                        validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _apellidosController,
+                        decoration: AppTheme.modernInput(label: 'Apellidos', prefixIcon: Icons.person_outline),
+                        validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _telefonoController,
+                        decoration: AppTheme.modernInput(label: 'Teléfono', prefixIcon: Icons.phone_outlined),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _correoController,
+                        decoration: AppTheme.modernInput(label: 'Correo Electrónico', prefixIcon: Icons.email_outlined),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Requerido';
+                          final emailRegex = RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$');
+                          if (!emailRegex.hasMatch(v)) return 'Correo inválido';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      GradientButton(
+                        label: _submitting ? 'Creando...' : 'Crear y Asignar Veedor',
+                        icon: _submitting ? null : Icons.person_add_rounded,
+                        isLoading: _submitting,
+                        onPressed: _submitting ? null : () {
                           if (_formKey.currentState!.validate()) {
                             setState(() => _submitting = true);
                             context.read<RecintoBloc>().add(
@@ -154,14 +161,14 @@ class _CreateVeedorPageState extends State<CreateVeedorPage> {
                             );
                           }
                         },
-                  child: _submitting
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Crear y Asignar Veedor'),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
