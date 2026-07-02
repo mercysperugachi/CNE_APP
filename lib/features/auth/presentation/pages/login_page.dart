@@ -8,6 +8,9 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'change_password_page.dart';
 import '../../../home/presentation/pages/home_router_page.dart';
+import 'package:appwrite/appwrite.dart'; // Para el Client
+import '../../../../core/config/constants.dart'; // Ruta a tus constantes
+import '../../../../core/utils/db_seeder.dart'; // Ruta donde guardaste el seeder
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -216,6 +219,34 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                               ),
                             ],
                           ),
+                          const SizedBox(height: 32),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final client = Client()
+                                ..setEndpoint('https://cloud.appwrite.io/v1') // o http://localhost/v1 si es local
+                                ..setProject(AppConstants.projectId);
+                                
+                              final seeder = DatabaseSeeder(client);
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Cargando datos en Appwrite...')),
+                              );
+                              
+                              await seeder.cargarDatosDePrueba();
+                              
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('¡Datos cargados! Revisa la consola y Appwrite.')),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.cloud_upload, color: Colors.white),
+                            label: const Text('CARGAR DATOS DE PRUEBA', style: TextStyle(color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade600,
+                              elevation: 0,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -298,6 +329,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   },
                 ),
                 const SizedBox(height: 24),
+
+                
               ],
             ),
           ),
@@ -305,4 +338,5 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       },
     );
   }
+  
 }

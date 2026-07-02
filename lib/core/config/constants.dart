@@ -1,6 +1,6 @@
 class AppConstants {
   // Appwrite Project & DB
-  static const String backendUrl = 'https://backend-to-email.onrender.com'; // Backend de correos desplegado
+  static const String backendUrl = 'https://notificador-alertas-api.onrender.com'; // Backend de correos desplegado
   static const String projectId = '6a3dfba4001565b60d12';
   static const String databaseId = '6a46a0d0001346d3be26';
   static const String apiKey = 'standard_697582eb0cbbbc307bfa89253f43d282ed203c2e1589e1b0ff563418395487aeb056b567506234d5205d441ca21edf4f13b9c198ef46936fb205ec728c95a0baed4dc16d4ff8cf8ace97794518b4e3d9c34a1d97300e4bfeb6604aa4b5474ae847010926ba32560d81ce388fb630bdeb3b3788f6343d722c326c018b89f630bd';
