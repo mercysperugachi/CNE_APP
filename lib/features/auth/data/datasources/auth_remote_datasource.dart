@@ -57,20 +57,24 @@ class AppwriteAuthDataSource implements AuthRemoteDataSource {
     }
   }
 
-  @override
+@override
   Future<UserModel> getCurrentUser() async {
     try {
       // Obtenemos los datos base de autenticación
       final accountData = await appwriteConfig.account.get();
       
-      // Consultamos la colección de usuarios para obtener los datos extendidos (rol, nombres, etc)
-      final userDoc = await appwriteConfig.databases.getDocument(
+      // En lugar de buscar por ID de documento, buscamos por el correo de la sesión actual
+      final docs = await appwriteConfig.databases.listDocuments(
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.usersCollectionId,
-        documentId: accountData.$id,
+        queries: [Query.equal('correo', accountData.email)],
       );
 
-      return UserModel.fromJson(userDoc.data);
+      if (docs.documents.isEmpty) {
+        throw Exception('No se encontró el perfil de este usuario en la base de datos.');
+      }
+
+      return UserModel.fromJson(docs.documents.first.data);
     } on AppwriteException catch (e) {
       throw Exception(e.message ?? 'Error al obtener usuario actual');
     }

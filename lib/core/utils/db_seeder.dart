@@ -1,6 +1,6 @@
 // lib/core/utils/db_seeder.dart
 import 'package:appwrite/appwrite.dart';
-import '../config/constants.dart'; // Ajusta esta ruta según tu proyecto
+import '../config/constants.dart'; 
 
 class DatabaseSeeder {
   final Databases databases;
@@ -9,18 +9,18 @@ class DatabaseSeeder {
 
   Future<void> cargarDatosDePrueba() async {
     try {
-      print("⏳ Iniciando carga de datos en Appwrite...");
+      print("⏳ Iniciando carga de datos REALES de Pedro Moncayo...");
 
-      // 1. Cargar Centros de Votación (Recintos)
+      // 1. Cargar Centros de Votación Reales (Pedro Moncayo)
       final centro1 = await databases.createDocument(
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.recintosCollectionId,
         documentId: ID.unique(),
         data: {
-          'canton': 'Quito',
-          'parroquia': 'Iñaquito',
-          'nombre': 'Colegio Nacional Central',
-          'cantidadMesas': '5', // String si lo configuraste todo como String
+          'canton': 'Pedro Moncayo',
+          'parroquia': 'Tabacundo',
+          'nombre': 'Unidad Educativa Tabacundo (Juan Montalvo y G. Suárez)',
+          'cantidadMesas': '15', 
         },
       );
 
@@ -29,16 +29,28 @@ class DatabaseSeeder {
         collectionId: AppConstants.recintosCollectionId,
         documentId: ID.unique(),
         data: {
-          'canton': 'Guayaquil',
-          'parroquia': 'Tarqui',
-          'nombre': 'Universidad Estatal',
+          'canton': 'Pedro Moncayo',
+          'parroquia': 'Tabacundo',
+          'nombre': 'Unidad Educativa del Milenio Cochasqui',
           'cantidadMesas': '10',
         },
       );
 
-      print("✅ Centros de votación creados.");
+      final centro3 = await databases.createDocument(
+        databaseId: AppConstants.databaseId,
+        collectionId: AppConstants.recintosCollectionId,
+        documentId: ID.unique(),
+        data: {
+          'canton': 'Pedro Moncayo',
+          'parroquia': 'Malchinguí',
+          'nombre': 'Escuela de Educación Básica Malchinguí',
+          'cantidadMesas': '7',
+        },
+      );
 
-      // 2. Cargar Juntas Receptoras (Mesas) asociadas al Centro 1
+      print("✅ Recintos oficiales del CNE creados.");
+
+      // 2. Cargar Juntas Receptoras (Mesas) asignadas a Tabacundo
       await databases.createDocument(
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.mesasCollectionId,
@@ -59,21 +71,21 @@ class DatabaseSeeder {
         },
       );
 
-      print("✅ Juntas receptoras creados.");
+      print("✅ Juntas receptoras reales creadas.");
 
-      // 3. Cargar Listas Políticas (Candidatos)
+      // 3. Cargar Listas Políticas (Candidatos simulados para el cantón)
       await databases.createDocument(
         databaseId: AppConstants.databaseId,
         collectionId: AppConstants.organizacionesCollectionId,
         documentId: ID.unique(),
         data: {
-          'nombre': 'Movimiento Renovación',
-          'siglas': 'MR',
-          'candidatoNombres': 'Carlos',
-          'candidatoApellidos': 'Mendoza',
-          'dignidad': AppConstants.dignidadAlcalde,
-          'numeroLista': '1',
-          'colorHex': 'FF0000', // Rojo
+          'nombre': 'Movimiento Alianza Pedro Moncayo',
+          'siglas': 'APM',
+          'candidatoNombres': 'Roberto',
+          'candidatoApellidos': 'Andrade',
+          'dignidad': 'Alcalde',
+          'numeroLista': '12',
+          'colorHex': '28A745', // Verde
         },
       );
 
@@ -82,18 +94,18 @@ class DatabaseSeeder {
         collectionId: AppConstants.organizacionesCollectionId,
         documentId: ID.unique(),
         data: {
-          'nombre': 'Frente de Esperanza',
-          'siglas': 'FE',
-          'candidatoNombres': 'María',
-          'candidatoApellidos': 'Gómez',
-          'dignidad': AppConstants.dignidadAlcalde,
-          'numeroLista': '5',
-          'colorHex': '0000FF', // Azul
+          'nombre': 'Frente Ciudadano Tabacundo',
+          'siglas': 'FCT',
+          'candidatoNombres': 'Lucía',
+          'candidatoApellidos': 'Mendoza',
+          'dignidad': 'Alcalde',
+          'numeroLista': '6',
+          'colorHex': '0056B3', // Azul
         },
       );
 
       print("✅ Listas políticas creadas.");
-      print("🎉 ¡TODOS LOS DATOS FUERON CARGADOS EXITOSAMENTE!");
+      print("🎉 ¡DATOS DE PEDRO MONCAYO CARGADOS EXITOSAMENTE!");
 
     } on AppwriteException catch (e) {
       print("❌ Error de Appwrite: ${e.message}");

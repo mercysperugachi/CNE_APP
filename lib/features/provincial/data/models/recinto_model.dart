@@ -11,12 +11,21 @@ class RecintoModel extends RecintoEntity {
   });
 
   factory RecintoModel.fromJson(Map<String, dynamic> json) {
+    // EL TRUCO ESTÁ AQUÍ: Convertimos el dato a entero sin importar cómo llegue
+    int parsedMesas = 0;
+    if (json['cantidadMesas'] != null) {
+      if (json['cantidadMesas'] is int) {
+        parsedMesas = json['cantidadMesas'];
+      } else {
+        parsedMesas = int.tryParse(json['cantidadMesas'].toString()) ?? 0;
+      }
+    }
     return RecintoModel(
       id: json['\$id'] ?? '',
       canton: json['canton'] ?? '',
       parroquia: json['parroquia'] ?? '',
       nombre: json['nombre'] ?? '',
-      cantidadMesas: json['cantidadMesas'] ?? 0,
+      cantidadMesas: parsedMesas,
       coordinadorId: json['coordinadorId'],
     );
   }
@@ -26,7 +35,7 @@ class RecintoModel extends RecintoEntity {
       'canton': canton,
       'parroquia': parroquia,
       'nombre': nombre,
-      'cantidadMesas': cantidadMesas,
+      'cantidadMesas': cantidadMesas.toString(), 
       'coordinadorId': coordinadorId,
     };
   }
